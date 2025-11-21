@@ -4,8 +4,18 @@ version = "0.1.0"
 description = "xarray implementation of sharedarray functionalities"
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "numpy>=2.3.5",
+    "sharedarray>=3.2.4",
+    "xarray>=2025.11.0",
+    "xarray-dataclasses>=1.9.1",
+]
 
 [build-system]
 requires = ["uv_build>=0.9.5,<0.10.0"]
 build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.1",
+]

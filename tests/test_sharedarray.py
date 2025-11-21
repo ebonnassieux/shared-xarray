@@ -6,7 +6,6 @@ from multiprocessing.shared_memory import SharedMemory
 import pytest
 import os
 
-
 ### test sharedarray library functionalities
 import SharedArray as sa
 # clean up in case previous testing was done only partly
@@ -31,7 +30,7 @@ def test_sharedarray():
 
 # closer is needed when shared memory is no longer needed by 1 instance
 def test_close_shm():
-    from shared_xarray.shared_xarray import close_shm, unlink_shm
+    from shared_xarray.shared_xarray import close_shm
     # create shared memory object to check the closure is done properly
     shm_a = SharedMemory(name="test",create=True, size=10)
     # verify it gets closed properly 
@@ -47,7 +46,7 @@ def test_close_shm():
 
 # unlinker is needed when shared memory is no longer needed at all
 def test_unlink_shm():
-    from shared_xarray.shared_xarray import	unlink_shm
+    from shared_xarray.shared_xarray import unlink_shm
     shm_a = SharedMemory(name="test",create=True, size=10)
     unlink_shm("test")
     # verify file not found error
@@ -55,7 +54,55 @@ def test_unlink_shm():
         unlink_shm("test")
     except FileNotFoundError:
         return
+    # verify how to create a test case where the unlinking just fails
+    try:
+        unlink_shm("test")
     except Exception:
         return
 
-        
+# test shared buffer class
+from shared_xarray.shared_xarray import SharedBuffer
+def test_sharedbuffer_initialisation():
+    shm_a = SharedMemory(name="test_buffer",create=True, size=10)
+    test_buffer_1 = SharedBuffer(shm_a)
+    npt.assert_equal(shm_a,test_buffer_1._shm)
+    test_buffer_2 = SharedBuffer.from_name("test_buffer")
+    npt.assert_equal(test_buffer_1.name,test_buffer_2.name)
+    shm_a.unlink()
+    del(test_buffer_1,test_buffer_2)
+def test_sharedbuffer_properties():
+    shm_a = SharedMemory(name="test_buffer",create=True, size=10)
+    test_buffer_properties = SharedBuffer(shm_a)
+    npt.assert_equal(test_buffer_properties.name,"test_buffer")
+    del(test_buffer_properties)
+    shm_a.unlink()
+def test_sharedbuffer_attributes():
+    shm_a = SharedMemory(name="test_buffer",create=True, size=10)
+    test_buffer_attributes = SharedBuffer(shm_a)
+    assert "_shm","__weakref__" in test_buffer_attributes.__slots__
+    npt.assert_equal(test_buffer_attributes.__len__(),len(shm_a.buf))
+    del(test_buffer_attributes)
+    shm_a.unlink()
+def test_sharedbuffer_reduce_and_load():
+    shm_b = SharedMemory(name="test_buffer_readwrite",create=True, size=10)
+    test_buffer_readwrite = SharedBuffer(shm_b)
+    # test pickling of sharedbuffer
+    test_buffer_readwrite.__reduce__
+    # test reconstruction from name
+    del(test_buffer_readwrite)
+    shm_b.close()
+    test_buffer_2 = SharedBuffer.from_name("test_buffer_readwrite")
+    npt.assert_equal(test_buffer_2.__len__(),10)
+    shm_b.unlink()
+
+### TODO; i dont understand this function.
+# test buffer creation from shared array
+#def test_from_shared_array():
+#    from shared_xarray.shared_xarray import from_shared_array
+#    shm = SharedMemory(name="test_buffer_sharedarray",create=True, size=10)
+#    test_buffer = SharedBuffer(shm)
+#    shape = from_shared_array(shape=10,buffer=test_buffer)
+
+
+def test_SharedArray():
+    
