@@ -3,17 +3,9 @@ from multiprocessing.shared_memory import SharedMemory
 import ctypes
 import os
 from typing import Tuple
-import weakref
 import numpy as np
 from uuid import uuid4
 from xarray import DataArray
-
-# build global list of shared-xarrays
-if "DicoSharedXarrays" not in globals().keys():
-  global DicoSharedXarrays
-  DicoSharedXarrays={}
-  DicoSharedXarrays["Name"]={}
-  DicoSharedXarrays["Name"]["Closer"]=[]
 
 # define shared memory closer function
 def close_shm(name: str):
@@ -41,9 +33,9 @@ def unlink_shm(name: str):
 
 class SharedArray():
   """
-  docstring here
+  Function aiming to replace SharedArray
   """
-
+  
   def __getitem__(self, index):    
     return self._array[index]
   
@@ -95,7 +87,6 @@ class SharedArray():
         self.arr_shape=shape
         try:
           self._shm = SharedMemory(create=True, size=nbytes, name=self.name)
-#          finalize_fn = unlink_shm
         except FileExistsError:
           if verbose:
             print("Shared memory file already exists")
@@ -108,7 +99,6 @@ class SharedArray():
         if verbose==True:
           print(f"{op} {self} in {os.getpid()}")
         # add params to global variable
-#        DicoSharedXarrays[self.name]=finalize_fn
       # attach if requested.
       elif op=="Attach":
         # attach if already existing
@@ -118,7 +108,6 @@ class SharedArray():
           shape=array.shape
           dt = np.dtype(dtype)
           self._array = DataArray(np.ndarray(shape,dt,self._shm.buf))
-#          finalize_fn = close_shm
         except FileNotFoundError:
           if verbose:
             print("Shared memory file does not yet exist")
@@ -127,12 +116,9 @@ class SharedArray():
           if verbose:
             print("Operation not supported")
             return NotImplemented
-        # add params to global variable
-#        DicoSharedXarrays[self.name]=finalize_fn
     # set array value
     self._array = DataArray(np.ndarray(shape, dt, self._shm.buf))
     # define weakref for clean bookkeeping purposes
-#    weakref.finalize(self, finalize_fn, self._shm.name)
     self._verbose = verbose
     if verbose==True:
       print(f"{op} {self} in {os.getpid()}")

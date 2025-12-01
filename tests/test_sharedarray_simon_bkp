@@ -1,0 +1,221 @@
+# this replicates the tests in sharedarray dev repo
+import numpy.testing as npt
+import numpy as np
+import SharedArray as sa
+from multiprocessing.shared_memory import SharedMemory
+import pytest
+import os
+
+### test sharedarray library functionalities
+import SharedArray as sa
+# clean up in case previous testing was done only partly
+if os.path.isfile("shm://test"):
+    sa.delete("test")
+def test_sharedarray():
+    import SharedArray as sa
+    # Create an array in shared memory.
+    a = sa.create("shm://test", 10)
+    # Attach it as a different array. This can be done from another
+    # python interpreter as long as it runs on the same computer.
+    b = sa.attach("shm://test")
+    # See how they are actually sharing the same memory.
+    a[0] = 42
+    npt.assert_array_equal(a,b)
+    # Destroying a does not affect b.
+    del a
+    npt.assert_equal(b[0],42)
+    sa.delete("test")
+
+### test global functions
+
+# closer is needed when shared memory is no longer needed by 1 instance
+def test_close_shm():
+    from shared_xarray.shared_xarray import close_shm
+    # create shared memory object to check the closure is done properly
+    shm_a = SharedMemory(name="test",create=True, size=10)
+    # verify it gets closed properly
+    close_shm("test")
+    npt.assert_equal(os.path.isfile("shm://test"),False)
+    # verify file not found error
+    shm_a.unlink()
+    shm_a.close()
+    try:
+        close_shm("test")
+    except FileNotFoundError:
+        return
+
+# unlinker is needed when shared memory is no longer needed at all
+def test_unlink_shm():
+    from shared_xarray.shared_xarray import unlink_shm
+    shm_a = SharedMemory(name="test",create=True, size=10)
+    unlink_shm("test")
+    # verify file not found error
+    try:
+        unlink_shm("test")
+    except FileNotFoundError:
+        return # verify how to create a test case where the unlinking just fails
+    try:
+        unlink_shm("test")
+    except Exception:
+        return
+
+# test shared buffer class
+from shared_xarray.shared_xarray import SharedBuffer
+def test_sharedbuffer_initialisation():
+    from shared_xarray.shared_xarray import SharedBuffer
+    shm_a = SharedMemory(name="test_buffer",create=True, size=10)
+    test_buffer_1 = SharedBuffer(shm_a)
+    npt.assert_equal(shm_a,test_buffer_1._shm)
+    test_buffer_2 = SharedBuffer.from_name("test_buffer")
+    npt.assert_equal(test_buffer_1.name,test_buffer_2.name)
+    shm_a.unlink()
+    del(test_buffer_1,test_buffer_2)
+def test_sharedbuffer_properties():
+    from shared_xarray.shared_xarray import SharedBuffer
+    shm_a = SharedMemory(name="test_buffer",create=True, size=10)
+    test_buffer_properties = SharedBuffer(shm_a)
+    npt.assert_equal(test_buffer_properties.name,"test_buffer")
+    del(test_buffer_properties)
+    shm_a.unlink()
+def test_sharedbuffer_attributes():
+    shm_a = SharedMemory(name="test_buffer",create=True, size=10)
+    test_buffer_attributes = SharedBuffer(shm_a)
+    assert "_shm","__weakref__" in test_buffer_attributes.__slots__    
+    npt.assert_equal(test_buffer_attributes.__len__(),len(shm_a.buf))
+    del(test_buffer_attributes)
+    shm_a.unlink()
+def test_sharedbuffer_reduce_and_load():
+    shm_b = SharedMemory(name="test_buffer_readwrite",create=True, size=10)
+    test_buffer_readwrite = SharedBuffer(shm_b)
+    # test pickling of sharedbuffer
+    test_buffer_readwrite.__reduce__
+    # test reconstruction from name
+    del(test_buffer_readwrite)
+    shm_b.close()
+    test_buffer_2 = SharedBuffer.from_name("test_buffer_readwrite")
+    npt.assert_equal(test_buffer_2.__len__(),10)
+    shm_b.unlink()
+
+### TODO; i dont understand this function.  test buffer creation from
+# shared array def test_from_shared_array(): from
+# shared_xarray.shared_xarray import from_shared_array shm =
+# SharedMemory(name="test_buffer_sharedarray",create=True, size=10)
+# test_buffer = SharedBuffer(shm) shape =
+# from_shared_array(shape=10,buffer=test_buffer)
+
+
+def test_SharedArray():
+    from shared_xarray.shared_xarray import SharedArray
+    import numpy as np
+    test_arr = np.arange(25,10)
+    test_sharedarray = SharedArray(shape=(25,10),name="test_sxa",dtype=float)#,writeable=True)
+    # test that test array is writeable by default
+    print(dir(test_sharedarray))#._array)
+#    npt.assert_equal(test_sharedarray.writeable,True)
+    # test ability to create readonly sharedarray
+    test_sharedarray = SharedArray(shape=(25,10),name="test_sxa",dtype=float,writeable=False,verbose=True)
+#    test_sharedarray.create()    
+    #npt.assert_equal(test_sharedarray._array.flags.writeable,False)
+    # test properties
+    npt.assert_equal(test_sharedarray.name,"test_sxa")
+    npt.assert_equal(test_sharedarray.ndim,len((25,10)))
+    npt.assert_equal(test_sharedarray.shape,(25,10))
+    npt.assert_equal(test_sharedarray.dtype,np.float64)
+    # test array is correctly stored
+    npt.assert_equal(test_sharedarray.__array__,test_arr)
+    # test __array__ufunc__
+    todo=1
+    # test __array_function__
+    todo=1
+    # test getitem
+    todo=1
+    # test repr
+    npt.assert_equal(test_sharedarray.__repr__(),"SharedArray(name=test_sxa,address=0)")
+
+### below is the thing we actual wanted all along ffs
+#def test_package():
+#    # goal here is for shared_xarray to replicate behaviour from sharedarray.
+#    from shared_xarray.shared_xarray import SharedArray as sa
+#    # Create an array in shared memory.
+#    a = sa.create("shm://test", 10)
+#    print(a)
+#    stop
+#    # Attach it as a different array. This can be done from another
+#    # python interpreter as long as it runs on the same computer.
+#    b = sa.attach("shm://test")
+#    # See how they are actually sharing the same memory.
+#    a[0] = 42
+#    npt.assert_array_equal(a,b)
+#    # Destroying a does not affect b.
+#    del a
+#    npt.assert_equal(b[0],42)
+#    sa.delete("test")
+
+
+
+#    from uuid import uuid4
+#    import pickle
+#    from multiprocessing import Process
+#    import xarray
+#    from shared_xarray.shared_xarray import SharedArray
+#    import numpy as np
+#
+#    # define some axes and dimensions
+#    ntime = 100
+#    na = 7
+#    nbl = na * (na - 1) // 2
+#    nchan = 16
+#    npol = 4
+#    # create the shared buffer
+#    buf = SharedBuffer(SharedMemory(name=f"buffer-{uuid4().hex}", create=True, size=100))
+#    # duplicate it
+#    buf2: SharedBuffer = pickle.loads(pickle.dumps(buf))
+#    # check name was preserved
+#    assert buf._shm.name == buf2._shm.name
+#    # remove first buffer
+#    buf._shm.unlink()
+#
+#    # define xarray data structure
+#    data = xarray.Variable(
+#        ("time", "baseline", "frequency", "polarization"),
+#        SharedArray(
+#            (ntime, nbl, nchan, npol),
+#            np.complex64,
+#            writeable=True
+#        )
+#    )
+#
+#    # create a dataset structure
+#    ds = xarray.Dataset({
+#        "DATA": data,
+#    },
+#                        coords={
+#                            "time": np.linspace(0.0, 1.0, ntime)
+#                        })
+#
+#    # verify can pickle iteratively
+#    ds2 = pickle.loads(pickle.dumps(ds))
+#    ds3 = pickle.loads(pickle.dumps(ds2))
+#
+#    # Needs SharedArray comparison
+#    #xarray.testing.assert_identical(ds, ds2)
+#    #xarray.testing.assert_identical(ds2, ds3)
+#
+#    ds.DATA[:50] = 10.0
+#    
+#    def proc_fn(dataset):
+#        assert isinstance(ds.DATA.data, SharedArray)
+#        print(f"{os.getpid()}: {ds.DATA.data}")
+#        assert np.all(dataset.DATA.values[:50, ...] == 10.)
+#        
+#    procs = [Process(target=proc_fn, args=(ds,)) for _ in range(5)]
+#
+#    
+#    for p in procs:
+#        p.start()
+#
+#    stop
+#        
+#    for p in procs:
+#        p.join()
+
