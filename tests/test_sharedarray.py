@@ -46,4 +46,4 @@ def test_SharedArray_sharedxarray():
 def test_SharedXarray_functionalities():
     from shared_xarray.shared_xarray import SharedArray as sa
     a = sa.create("shm://test", 10)
-#    print(a._array.dims)
+    #print(a._array.keys())

@@ -1,6 +1,6 @@
 [project]
 name = "shared-xarray"
-version = "0.1.0"
+version = "0.1.1"
 description = "xarray implementation of sharedarray functionalities"
 readme = "README.md"
 requires-python = ">=3.14"
@@ -8,7 +8,7 @@ dependencies = [
     "numpy>=2.3.5",
     "sharedarray>=3.2.4",
     "xarray>=2025.11.0",
-    "xarray-dataclasses>=1.9.1",
+    "xarray-dataclasses>=0.4.0",
 ]
 
 [build-system]
