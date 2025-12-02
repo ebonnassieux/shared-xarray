@@ -143,13 +143,13 @@ wheels = [
 
 [[package]]
 name = "shared-xarray"
-version = "0.1.2"
+version = "0.1.3.1"
 source = { editable = "." }
 dependencies = [
     { name = "numpy" },
+    { name = "pandas" },
     { name = "sharedarray" },
     { name = "xarray" },
-    { name = "xarray-dataclasses" },
 ]
 
 [package.dev-dependencies]
@@ -159,10 +159,10 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "numpy", specifier = ">=1.3.5" },
+    { name = "numpy", specifier = ">=1.26" },
+    { name = "pandas", specifier = ">=2.2" },
     { name = "sharedarray", specifier = ">=3.2.4" },
     { name = "xarray", specifier = ">=2025.11.0" },
-    { name = "xarray-dataclasses", specifier = ">=0.4.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -187,15 +187,6 @@ wheels = [
 ]
 
 [[package]]
-name = "typing-extensions"
-version = "4.15.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/72/94/1a15dd82efb362ac84269196e94cf00f187f7ed21c242792a923cdb1c61f/typing_extensions-4.15.0.tar.gz", hash = "sha256:0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466", size = 109391, upload-time = "2025-08-25T13:49:26.313Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/18/67/36e9267722cc04a6b9f15c7f3441c2363321a3ea07da7ae0c0707beb2a9c/typing_extensions-4.15.0-py3-none-any.whl", hash = "sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548", size = 44614, upload-time = "2025-08-25T13:49:24.86Z" },
-]
-
-[[package]]
 name = "tzdata"
 version = "2025.2"
 source = { registry = "https://pypi.org/simple" }
@@ -216,16 +207,4 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/39/ad/b072c970cfb2e2724509bf1e8d7fb4084cc186a90d486c9ac4a48ff83186/xarray-2025.11.0.tar.gz", hash = "sha256:d7a4aa4500edbfd60676b1613db97da309ab144cac0bcff0cbf483c61c662af1", size = 3072276, upload-time = "2025-11-17T16:12:09.167Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/86/b4/cfa7aa56807dd2d9db0576c3440b3acd51bae6207338ec5610d4878e5c9b/xarray-2025.11.0-py3-none-any.whl", hash = "sha256:986893b995de4a948429356a3897d78e634243c1cac242bd59d03832b9d72dd1", size = 1375447, upload-time = "2025-11-17T16:12:07.123Z" },
-]
-
-[[package]]
-name = "xarray-dataclasses"
-version = "1.4.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "typing-extensions" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/66/25/fe45f464dbfbaa7964f2b65aeb275cf89de4783899cc9a5ca4231c996e51/xarray_dataclasses-1.4.0.tar.gz", hash = "sha256:a62754bea8a60cbfd3114ef0cbd87b1f5b39fdd01f24a3e52f7a1199f206f4c3", size = 14484, upload-time = "2023-01-18T13:17:34.713Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/00/45/05d49def03f964cd9524c1b7a175aa56bd54577ffd23e97ef60f199f161f/xarray_dataclasses-1.4.0-py3-none-any.whl", hash = "sha256:5e0d29b8109e1d1270a2a4bb35629e0cff5eff850146016dff079e3e8ad71ccf", size = 14607, upload-time = "2023-01-18T13:17:33.163Z" },
 ]
